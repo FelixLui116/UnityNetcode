@@ -28,7 +28,7 @@ public class NetworkManagerUI : NetworkBehaviour {
             NetworkManager.Singleton.StartClient();
         });
         testCloneBtn.onClick.AddListener(() => {
-            // TestCloneObject();
+            TestCloneObject();
                 // Setname("Hello123");
             
             
