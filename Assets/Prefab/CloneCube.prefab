@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2453709627315763280}
   - component: {fileID: 7646605784740104882}
   - component: {fileID: 7510710202851564621}
+  - component: {fileID: 3104196682887607238}
   - component: {fileID: 422805301402358249}
   m_Layer: 0
   m_Name: CloneCube
@@ -98,6 +99,20 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3104196682887607238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4504534693994734324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 343c51c62ce65714f8649ed28082a4ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: {r: 0, g: 0, b: 0, a: 0}
+  renderer: {fileID: 7646605784740104882}
 --- !u!114 &422805301402358249
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -15,6 +15,9 @@ public class NetworkManagerUI : NetworkBehaviour {
 
     [SerializeField] private GameObject testPlane;    
     [SerializeField] private Text showText;
+
+    private NetworkVariable<int> playersNum = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone);
+
     private void Awake() {
 
 
@@ -46,6 +49,8 @@ public class NetworkManagerUI : NetworkBehaviour {
     // Update is called once per frame
     void Update()
     {
+        showText.text  = "Players: " +playersNum.Value.ToString(); // *1
+
         if(!IsOwner) return;
 
         if (Input.GetKeyDown(KeyCode.T))
@@ -53,6 +58,11 @@ public class NetworkManagerUI : NetworkBehaviour {
             // TestingClientRpc();
             TestServerRpc();
         }
+
+        // *1
+        if (!IsServer) return;
+        playersNum.Value =NetworkManager.Singleton.ConnectedClients.Count;
+        //
     }
     // public void Setname(string name){
         // SetnameClientRpc(name);
@@ -74,6 +84,8 @@ public class NetworkManagerUI : NetworkBehaviour {
         GameObject spawnedTestOject = Instantiate(testClone);
         spawnedTestOject.GetComponent<NetworkObject>().Spawn(true);
         
+        ObjectColorChange ObjChangeC = spawnedTestOject.GetComponent<ObjectColorChange>();
+        ObjChangeC.changeColorFunc_Green();
     }
 
     [ServerRpc]
