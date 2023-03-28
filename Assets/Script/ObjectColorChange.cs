@@ -26,6 +26,7 @@ public class ObjectColorChange : MonoBehaviour
     public void changeColorFunc_Green(){
         
         renderer.material.SetColor("_Color", Color.green);
+        print("changed box color to green");
     }
 
 }

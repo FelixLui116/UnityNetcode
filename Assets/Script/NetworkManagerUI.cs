@@ -10,8 +10,8 @@ public class NetworkManagerUI : NetworkBehaviour {
     [SerializeField] private Button hostBtn;
     [SerializeField] private Button clientBtn;
     
-    [SerializeField] private Button testCloneBtn;
-    [SerializeField] private GameObject testClone;
+    [SerializeField] private Button testCloneBtn, test_2;
+    [SerializeField] private GameObject testClone , test_2_Obj , test_2_Obj_Test;
 
     [SerializeField] private GameObject testPlane;    
     [SerializeField] private Text showText;
@@ -32,9 +32,10 @@ public class NetworkManagerUI : NetworkBehaviour {
         });
         testCloneBtn.onClick.AddListener(() => {
             TestCloneObject();
+        });
                 // Setname("Hello123");
-            
-            
+        test_2.onClick.AddListener(() => {
+            MakeObjectClientRpc();  
         });
     }
     // Start is called before the first frame update
@@ -84,8 +85,11 @@ public class NetworkManagerUI : NetworkBehaviour {
         GameObject spawnedTestOject = Instantiate(testClone);
         spawnedTestOject.GetComponent<NetworkObject>().Spawn(true);
         
-        ObjectColorChange ObjChangeC = spawnedTestOject.GetComponent<ObjectColorChange>();
-        ObjChangeC.changeColorFunc_Green();
+        // ObjectColorChange ObjChangeC = spawnedTestOject.GetComponent<ObjectColorChange>();
+        // ObjChangeC.changeColorFunc_Green();
+
+        Color c_new = Color.red;
+        ChangeColorFunc_Green_ServerRpc(c_new);
     }
 
     [ServerRpc]
@@ -96,11 +100,29 @@ public class NetworkManagerUI : NetworkBehaviour {
     }
 
     [ServerRpc()]
-    private void TestServerRpc(){
-        
+    private void TestServerRpc(){   
         Debug.Log("-- TestServerRpc "+ OwnerClientId);
     }
-  
+    
+    [ServerRpc]
+    private void ChangeColorFunc_Green_ServerRpc(Color _c){
+        Debug.Log("Launch on Server");
+        // ObjectColorChange ObjChangeC = obj.GetComponent<ObjectColorChange>();
+        // ObjChangeC.renderer.material.SetColor("_Color", _c);
+    }
+
+    [ClientRpc]
+    private void MakeObjectClientRpc( )
+    {
+        Debug.Log("Launch on ClientRpc");
+        test_2_Obj_Test = test_2_Obj;   
+
+        ObjectColorChange ObjChangeC = test_2_Obj_Test.GetComponent<ObjectColorChange>();
+        // ObjChangeC.changeColorFunc_Red();
+        ObjChangeC.renderer.material.SetColor("_Color", Color.red);
+
+    }
+
     // [ClientRpc]
     // private void MakeObjectClientRpc( )
     // {
