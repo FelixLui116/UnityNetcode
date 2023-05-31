@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class NetworkManagerUI : NetworkBehaviour {
     [SerializeField] private Button serverBtn;
@@ -35,7 +36,11 @@ public class NetworkManagerUI : NetworkBehaviour {
         });
                 // Setname("Hello123");
         test_2.onClick.AddListener(() => {
-            MakeObjectClientRpc();  
+            // MakeObjectClientRpc();  
+
+
+            ChangeScene();
+
         });
     }
     // Start is called before the first frame update
@@ -91,6 +96,47 @@ public class NetworkManagerUI : NetworkBehaviour {
         Color c_new = Color.red;
         ChangeColorFunc_Green_ServerRpc(c_new);
     }
+
+
+
+
+    [ServerRpc(RequireOwnership = false)] // Allow clients to request a scene change
+    private void RequestSceneChangeServerRpc(string sceneName)
+    {
+        // Only allow the server to load the scene
+        if (IsServer)
+        {
+            SceneManager.LoadScene(sceneName);
+            ChangeSceneClientRpc(sceneName); // Inform clients about the scene change
+        }
+    }
+
+    [ClientRpc]
+    private void ChangeSceneClientRpc(string sceneName)
+    {
+        if (!IsServer)
+        {
+            SceneManager.LoadScene(sceneName);
+        }
+    }
+
+    private void ChangeScene()
+    {
+        string sceneName = "TestScene";
+
+        if (IsServer)
+        {
+            SceneManager.LoadScene(sceneName);
+            ChangeSceneClientRpc(sceneName); // Inform clients about the scene change
+        }
+        else if (IsClient)
+        {
+            RequestSceneChangeServerRpc(sceneName); // Request the scene change from the server
+        }
+    }
+
+
+
 
     [ServerRpc]
     private void MakeObjectServerRpc(){
