@@ -10,12 +10,14 @@ public class NetworkManagerUI : NetworkBehaviour {
     [SerializeField] private Button serverBtn;
     [SerializeField] private Button hostBtn;
     [SerializeField] private Button clientBtn;
-    
-    [SerializeField] private Button testCloneBtn, test_2;
-    [SerializeField] private GameObject testClone , test_2_Obj , test_2_Obj_Test;
+
+    [SerializeField] private Button [] testCloneBtn;
+    [SerializeField] private GameObject testClone , test_2_Obj , test_2_Obj_Test , TestColorObject;
 
     [SerializeField] private GameObject testPlane;    
     [SerializeField] private Text showText;
+
+    // private NetworkObjectReference spawnedTestObjectReference = null;
 
     private NetworkVariable<int> playersNum = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone);
 
@@ -31,16 +33,17 @@ public class NetworkManagerUI : NetworkBehaviour {
         clientBtn.onClick.AddListener(() => {
             NetworkManager.Singleton.StartClient();
         });
-        testCloneBtn.onClick.AddListener(() => {
+        testCloneBtn[0].onClick.AddListener(() => {
             TestCloneObject();
         });
                 // Setname("Hello123");
-        test_2.onClick.AddListener(() => {
+        testCloneBtn[1].onClick.AddListener(() => {
             // MakeObjectClientRpc();  
-
-
             ChangeScene();
-
+        });
+        testCloneBtn[2].onClick.AddListener(() => {
+            // MakeObjectClientRpc();  
+            ChangeColor();
         });
     }
     // Start is called before the first frame update
@@ -168,6 +171,61 @@ public class NetworkManagerUI : NetworkBehaviour {
         ObjChangeC.renderer.material.SetColor("_Color", Color.red);
 
     }
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Change the color of the object
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private void ChangeObjectColor(Color newColor)
+    {
+        Renderer renderer = TestColorObject.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.material.color = newColor;
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)] // Allow clients to request a ChangeColorServerRpc
+    private void ChangeColorServerRpc(Color newColor)
+    {
+        // 在主机上进行颜色更改逻辑
+        if (IsServer)
+        {
+            ChangeColorClientRpc(newColor);
+        }
+    }
+
+    [ClientRpc]
+    private void ChangeColorClientRpc(Color newColor)
+    {
+        // 在客户端上进行颜色更改逻辑
+        ChangeObjectColor(newColor);
+    }
+
+    private void ChangeColor()
+    {
+        // if (IsServer)
+        // {
+        //     ChangeColorServerRpc();
+        // }
+        // else if (IsClient)
+        // {
+        //     ChangeColorClientRpc(Color.blue);
+        // }
+        if (IsServer)
+        {
+            // ChangeColorServerRpc();
+            ChangeColorClientRpc(Color.red);
+        }
+        else if (IsClient)
+        {
+            ChangeColorServerRpc(Color.blue);
+        }
+    }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     // [ClientRpc]
     // private void MakeObjectClientRpc( )
