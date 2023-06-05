@@ -17,7 +17,8 @@ public class NetworkManagerUI : NetworkBehaviour {
     [SerializeField] private GameObject testPlane;    
     [SerializeField] private Text showText;
 
-    // private NetworkObjectReference spawnedTestObjectReference = null;
+    private NetworkObjectReference spawnedTestObjectReference;
+    [SerializeField]  private NetworkObject spawnedTestObject;
 
     private NetworkVariable<int> playersNum = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone);
 
@@ -76,32 +77,81 @@ public class NetworkManagerUI : NetworkBehaviour {
     // public void Setname(string name){
         // SetnameClientRpc(name);
     // }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////TestCloneFunc
     
     public void TestCloneObject(){
-        if (IsHost){
-            // MakeObjectServerRpc();
-            TestCloneFunc();
-        }else{
+        // if (IsHost){
+        //     // MakeObjectServerRpc();
+        //     TestCloneFunc();
+        // }else{
             
-            Debug.Log("Launch on TestCloneObject");
-            // MakeObjectClientRpc();
-        }
+        //     Debug.Log("Launch on TestCloneObject");
+        //     // MakeObjectClientRpc();
+        // }
+        TestCloneFunc();
     }
 
     public void TestCloneFunc(){
-        //  Instantiate(testClone);
-        GameObject spawnedTestOject = Instantiate(testClone);
-        spawnedTestOject.GetComponent<NetworkObject>().Spawn(true);
+        // GameObject spawnedTestObject = Instantiate(testClone);
+        // spawnedTestObject.GetComponent<NetworkObject>().Spawn(true);
+        // spawnedTestObjectReference = spawnedTestObject.GetComponent<NetworkObject>();
         
-        // ObjectColorChange ObjChangeC = spawnedTestOject.GetComponent<ObjectColorChange>();
-        // ObjChangeC.changeColorFunc_Green();
+        // Debug.Log(": "+ );
+        GameObject spawnedTestObject_clone = Instantiate(testClone);
 
-        Color c_new = Color.red;
-        ChangeColorFunc_Green_ServerRpc(c_new);
+        NetworkObject networkObject = spawnedTestObject_clone.GetComponent<NetworkObject>();
+        networkObject.SpawnAsPlayerObject(NetworkManager.Singleton.LocalClientId);
+        ulong networkObjectId = networkObject.NetworkObjectId;
+        Debug.Log("Network Object ID: " + networkObjectId);
+
+        AddObjectToClient(networkObjectId);
+    }
+
+    // private void AddObject_func(NetworkObjectReference tarage_obj, NetworkObjectReference  networkObject){
+    //     tarage_obj = networkObject;
+    // }
+
+    private void AddObjectToClient(ulong networkObjectId){
+        if (IsServer)
+        {
+            AddObjectClientRpc(networkObjectId);
+        }
+        else if (IsClient)
+        {
+            AddObjectServerRpc(networkObjectId);
+        }
+    }
+    [ServerRpc(RequireOwnership = false)] // Allow client to add object to server
+    public void AddObjectServerRpc(ulong  tarage_obj)
+    {
+        // AddObjectClientRpc(tarage_obj, networkObject);
+    }
+    // [ClientRpc]
+    // public void AddObjectClientRpc(NetworkObjectReference  tarage_obj, NetworkObjectReference  networkObject)
+    // {
+    //     AddObject_func(tarage_obj, networkObject);
+    // }
+    [ClientRpc]
+    public void AddObjectClientRpc(ulong networkObjectId)
+    {
+        // 在客户端中根据网络标识符查找相应的网络对象
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject clientNetworkObject))
+        {
+            // 在客户端上操作已找到的网络对象
+            // 使用 clientNetworkObject 进行进一步操作
+            Debug.Log("Received Network Object on client: " + clientNetworkObject.NetworkObjectId);
+            spawnedTestObject = clientNetworkObject;
+        }
     }
 
 
 
+
+
+    //////////////////////////////////////////////////////////////////////////////////
+    ////////// change scene
 
     [ServerRpc(RequireOwnership = false)] // Allow clients to request a scene change
     private void RequestSceneChangeServerRpc(string sceneName)
@@ -177,32 +227,6 @@ public class NetworkManagerUI : NetworkBehaviour {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Change the color of the object
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    private void ChangeObjectColor(Color newColor)
-    {
-        Renderer renderer = TestColorObject.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            renderer.material.color = newColor;
-        }
-    }
-
-    [ServerRpc(RequireOwnership = false)] // Allow clients to request a ChangeColorServerRpc
-    private void ChangeColorServerRpc(Color newColor)
-    {
-        // 在主机上进行颜色更改逻辑
-        if (IsServer)
-        {
-            ChangeColorClientRpc(newColor);
-        }
-    }
-
-    [ClientRpc]
-    private void ChangeColorClientRpc(Color newColor)
-    {
-        // 在客户端上进行颜色更改逻辑
-        ChangeObjectColor(newColor);
-    }
-
     private void ChangeColor()
     {
         // if (IsServer)
@@ -223,6 +247,38 @@ public class NetworkManagerUI : NetworkBehaviour {
             ChangeColorServerRpc(Color.blue);
         }
     }
+
+    [ServerRpc(RequireOwnership = false)] // Allow clients to request a ChangeColorServerRpc
+    private void ChangeColorServerRpc(Color newColor)
+    {
+        // 在主机上进行颜色更改逻辑
+        if (IsServer)
+        {
+            ChangeColorClientRpc(newColor);
+        }
+    }
+
+    [ClientRpc]
+    private void ChangeColorClientRpc(Color newColor)
+    {
+        // 在客户端上进行颜色更改逻辑
+        ChangeObjectColor(newColor);
+    }
+
+
+    private void ChangeObjectColor(Color newColor)
+    {
+        // Renderer renderer = TestColorObject.GetComponent<Renderer>();
+        Renderer renderer = spawnedTestObject.GetComponent<Renderer>();
+        
+        // NetworkObject spawnedTestObject = spawnedTestObjectReference.Value;
+        // Renderer renderer = spawnedTestObject.GetComponent<Renderer>();
+
+        renderer.material.color = newColor;
+    }
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
