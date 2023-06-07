@@ -17,7 +17,7 @@ public class NetworkManagerUI : NetworkBehaviour {
     [SerializeField] private GameObject testPlane;    
     [SerializeField] private Text showText;
 
-    private NetworkObjectReference spawnedTestObjectReference;
+    // private NetworkObjectReference spawnedTestObjectReference;
     [SerializeField]  private NetworkObject spawnedTestObject;
 
     private NetworkVariable<int> playersNum = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone);
@@ -74,23 +74,22 @@ public class NetworkManagerUI : NetworkBehaviour {
         playersNum.Value =NetworkManager.Singleton.ConnectedClients.Count;
         //
     }
-    // public void Setname(string name){
-        // SetnameClientRpc(name);
-    // }
 
     /////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////TestCloneFunc
     
     public void TestCloneObject(){
-        // if (IsHost){
-        //     // MakeObjectServerRpc();
-        //     TestCloneFunc();
-        // }else{
-            
-        //     Debug.Log("Launch on TestCloneObject");
-        //     // MakeObjectClientRpc();
-        // }
-        TestCloneFunc();
+       
+        // TestCloneFunc();
+        if (IsServer)
+        {
+            TestCloneFunc();
+        }
+        else
+        {
+            Debug.Log("Launch on TestCloneObject");
+            TestCloneObjectServerRpc();
+        }
     }
 
     public void TestCloneFunc(){
@@ -102,7 +101,8 @@ public class NetworkManagerUI : NetworkBehaviour {
         GameObject spawnedTestObject_clone = Instantiate(testClone);
 
         NetworkObject networkObject = spawnedTestObject_clone.GetComponent<NetworkObject>();
-        networkObject.SpawnAsPlayerObject(NetworkManager.Singleton.LocalClientId);
+        // networkObject.SpawnAsPlayerObject(NetworkManager.Singleton.LocalClientId);
+        networkObject.Spawn(true);
         ulong networkObjectId = networkObject.NetworkObjectId;
         Debug.Log("Network Object ID: " + networkObjectId);
 
@@ -114,15 +114,22 @@ public class NetworkManagerUI : NetworkBehaviour {
     // }
 
     private void AddObjectToClient(ulong networkObjectId){
-        if (IsServer)
-        {
-            AddObjectClientRpc(networkObjectId);
-        }
-        else if (IsClient)
-        {
-            AddObjectServerRpc(networkObjectId);
-        }
+        // if (IsServer)
+        // {
+        //     AddObjectClientRpc(networkObjectId);
+        // }
+        // else if (IsClient)
+        // {
+        //     AddObjectServerRpc(networkObjectId);
+        // }
+        AddObjectClientRpc(networkObjectId);
     }
+    [ServerRpc(RequireOwnership = false)] // Allow client to request object cloning
+    public void TestCloneObjectServerRpc()
+    {
+        TestCloneFunc();
+    }
+
     [ServerRpc(RequireOwnership = false)] // Allow client to add object to server
     public void AddObjectServerRpc(ulong  tarage_obj)
     {
